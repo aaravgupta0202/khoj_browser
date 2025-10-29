@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Arc Browser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .title {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff6f3c 0%, #ff9c7a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+        
+        .settings-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #ff9c7a;
+            border-bottom: 2px solid rgba(255, 111, 60, 0.3);
+            padding-bottom: 10px;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+        
+        .setting-label {
+            flex: 1;
+        }
+        
+        .setting-control {
+            flex-shrink: 0;
+        }
+        
+        select, input[type="text"] {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            min-width: 200px;
+        }
+        
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 111, 60, 0.3);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+        
+        .btn:hover {
+            background: rgba(255, 111, 60, 0.5);
+        }
+        
+        .btn-danger {
+            background: rgba(255, 0, 0, 0.3);
+        }
+        
+        .btn-danger:hover {
+            background: rgba(255, 0, 0, 0.5);
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .color-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-option.selected {
+            border-color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Settings</h1>
+            <p class="subtitle">Customize your browsing experience</p>
+        </div>
+        
+        <div class="settings-section">
+            <h2 class="section-title">Appearance</h2>
+            
+            <div class="setting-item">
+                <div class="setting-label">
+                    <strong>Theme</strong>
+                    <p>Choose your preferred theme</p>
+                </div>
+                <div class="setting-control">
+                    <select id="themeSelect" onchange="updateSetting('theme', this.value)">
+                        <option value="dark">Dark</option>
+                        <option value="light">Light</option>
+                        <option value="auto">Auto</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="setting-item">
+                <div class="setting-label">
+                    <strong>Ribbon Color</strong>
+                    <p>Customize the browser ribbon color</p>
+                </div>
+                <div class="setting-control">
+                    <div class="color-options">
+                        <div class="color-option selected" style="background: #ff0000;" onclick="selectColor('#ff0000')"></div>
+                        <div class="color-option" style="background: #ff6f3c;" onclick="selectColor('#ff6f3c')"></div>
+                        <div class="color-option" style="background: #4CAF50;" onclick="selectColor('#4CAF50')"></div>
+                        <div class="color-option" style="background: #2196F3;" onclick="selectColor('#2196F3')"></div>
+                        <div class="color-option" style="background: #9C27B0;" onclick="selectColor('#9C27B0')"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <h2 class="section-title">General</h2>
+            
+            <div class="setting-item">
+                <div class="setting-label">
+                    <strong>Home Page</strong>
+                    <p>Set your default home page</p>
+                </div>
+                <div class="setting-control">
+                    <input type="text" id="homePage" placeholder="arc://newtab" onchange="updateSetting('home_page', this.value)">
+                </div>
+            </div>
+            
+            <div class="setting-item">
+                <div class="setting-label">
+                    <strong>Search Engine</strong>
+                    <p>Choose your default search engine</p>
+                </div>
+                <div class="setting-control">
+                    <select id="searchEngine" onchange="updateSetting('search_engine', this.value)">
+                        <option value="google">Google</option>
+                        <option value="bing">Bing</option>
+                        <option value="duckduckgo">DuckDuckGo</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <h2 class="section-title">Privacy & Security</h2>
+            
+            <div class="setting-item">
+                <div class="setting-label">
+                    <strong>Save Browsing History</strong>
+                    <p>Remember your browsing history</p>
+                </div>
+                <div class="setting-control">
+                    <input type="checkbox" id="saveHistory" class="checkbox" onchange="updateSetting('save_history', this.checked)">
+                </div>
+            </div>
+            
+            <div class="setting-item">
+                <div class="setting-label">
+                    <strong>Block Ads</strong>
+                    <p>Block intrusive advertisements</p>
+                </div>
+                <div class="setting-control">
+                    <input type="checkbox" id="blockAds" class="checkbox" onchange="updateSetting('block_ads', this.checked)">
+                </div>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <button class="btn" onclick="saveSettings()">Save Settings</button>
+            <button class="btn btn-danger" onclick="resetSettings()">Reset to Defaults</button>
+            <button class="btn" onclick="goBack()">Back to Browser</button>
+        </div>
+    </div>
+
+    <script>
+        // Load current settings
+        function loadSettings() {
+            const settings = window.settingsData || {};
+            
+            // Set form values from settings
+            document.getElementById('themeSelect').value = settings.theme || 'dark';
+            document.getElementById('homePage').value = settings.home_page || 'arc://newtab';
+            document.getElementById('searchEngine').value = settings.search_engine || 'google';
+            document.getElementById('saveHistory').checked = settings.save_history !== false;
+            document.getElementById('blockAds').checked = settings.block_ads || false;
+        }
+        
+        function updateSetting(key, value) {
+            // Settings are saved when user clicks "Save Settings"
+            console.log(`Setting updated: ${key} = ${value}`);
+        }
+        
+        function selectColor(color) {
+            // Update selected color
+            document.querySelectorAll('.color-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+            updateSetting('ribbon_color', color);
+        }
+        
+        function saveSettings() {
+            const settings = {
+                theme: document.getElementById('themeSelect').value,
+                home_page: document.getElementById('homePage').value,
+                search_engine: document.getElementById('searchEngine').value,
+                save_history: document.getElementById('saveHistory').checked,
+                block_ads: document.getElementById('blockAds').checked,
+                ribbon_color: document.querySelector('.color-option.selected').style.background
+            };
+            
+            // Send settings to Python
+            window.location.href = `arc://save-settings/${encodeURIComponent(JSON.stringify(settings))}`;
+        }
+        
+        function resetSettings() {
+            if (confirm('Are you sure you want to reset all settings to defaults?')) {
+                window.location.href = 'arc://reset-settings';
+            }
+        }
+        
+        function goBack() {
+            window.location.href = 'arc://newtab';
+        }
+        
+        // Load settings when page loads
+        loadSettings();
+    </script>
+</body>
+</html>

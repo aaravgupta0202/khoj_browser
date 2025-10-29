@@ -1,0 +1,11 @@
+{
+  "name": "Default",
+  "email": "",
+  "pfp_path": "",
+  "settings": {
+    "theme": "dark",
+    "background": "default",
+    "bookmarks": [],
+    "history": []
+  }
+}

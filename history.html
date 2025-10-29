@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History - Arc Browser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .title {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff6f3c 0%, #ff9c7a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+        
+        .search-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 16px;
+        }
+        
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .history-list {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .history-item {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .history-item:hover {
+            background: rgba(255, 111, 60, 0.2);
+            transform: translateX(5px);
+        }
+        
+        .history-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #ff9c7a;
+        }
+        
+        .history-url {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-bottom: 5px;
+            word-break: break-all;
+        }
+        
+        .history-time {
+            font-size: 0.8rem;
+            opacity: 0.5;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            opacity: 0.7;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 111, 60, 0.3);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: rgba(255, 111, 60, 0.5);
+        }
+        
+        .btn-clear {
+            background: rgba(255, 0, 0, 0.3);
+        }
+        
+        .btn-clear:hover {
+            background: rgba(255, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Browsing History</h1>
+            <p class="subtitle">Your complete browsing journey</p>
+        </div>
+        
+        <div class="search-box">
+            <input type="text" class="search-input" placeholder="Search your history..." id="searchInput">
+        </div>
+        
+        <div class="actions">
+            <button class="btn" onclick="clearHistory()">Clear All History</button>
+            <button class="btn" onclick="goBack()">Back to Browser</button>
+        </div>
+        
+        <div class="history-list" id="historyList">
+            <div class="empty-state">
+                <h3>No browsing history yet</h3>
+                <p>Your visited pages will appear here</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function loadHistory() {
+            // This will be populated by Python
+            const history = window.historyData || [];
+            const list = document.getElementById('historyList');
+            
+            if (history.length === 0) {
+                list.innerHTML = '<div class="empty-state"><h3>No browsing history yet</h3><p>Your visited pages will appear here</p></div>';
+                return;
+            }
+            
+            list.innerHTML = '';
+            history.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.onclick = () => openUrl(item.url);
+                div.innerHTML = `
+                    <div class="history-title">${escapeHtml(item.title)}</div>
+                    <div class="history-url">${escapeHtml(item.url)}</div>
+                    <div class="history-time">${escapeHtml(item.timestamp)}</div>
+                `;
+                list.appendChild(div);
+            });
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function openUrl(url) {
+            window.location.href = `arc://navigate/${url}`;
+        }
+        
+        function clearHistory() {
+            if (confirm('Are you sure you want to clear all history?')) {
+                window.location.href = 'arc://clear-history';
+            }
+        }
+        
+        function goBack() {
+            window.location.href = 'arc://newtab';
+        }
+        
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            const items = document.querySelectorAll('.history-item');
+            
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(query) ? 'block' : 'none';
+            });
+        });
+        
+        // Load history when page loads
+        loadHistory();
+    </script>
+</body>
+</html>

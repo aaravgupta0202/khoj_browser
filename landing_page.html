@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ARC | New Tab</title>
+<style>
+  /* ---------- base ---------- */
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&display=swap');
+  :root{
+    --accent:#ff6f3c;
+    --accent-2:#ff845d;
+    --glass-bg: rgba(20,20,20,0.62);
+    --panel-bg: rgba(25,25,25,0.88);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:Inter, "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    color:#fff;
+    background: url("assets/backgrounds/bg9.jpg") center/cover no-repeat fixed;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    min-height:100vh;
+    overflow:hidden;
+  }
+
+  /* Remove all browser focus outlines */
+  :focus{outline: none !important; box-shadow: none !important}
+
+  /* ---------- top info ---------- */
+  .info-bar{
+    margin-top:56px;
+    background: rgba(10,10,10,0.45);
+    border-radius:20px;
+    padding:10px 20px;
+    display:flex;
+    gap:28px;
+    align-items:center;
+    backdrop-filter: blur(8px) saturate(140%);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+  }
+  .info-bar .item{font-weight:600; font-size:1rem; text-align:center}
+
+  /* ---------- title + search ---------- */
+  h1{
+    margin:22px 0 6px;
+    font-size:3.2rem;
+    letter-spacing:2px;
+    color:var(--accent);
+  }
+  .subtitle{opacity:0.9; margin-bottom:22px}
+
+  .search-box{
+    width:640px;
+    max-width:86%;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:10px 14px;
+    border-radius:999px;
+    background: rgba(30,30,30,0.6);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.36);
+    backdrop-filter: blur(10px);
+  }
+  .search-box input{
+    flex:1;
+    border:none;
+    background:transparent;
+    color:#fff;
+    font-size:1rem;
+    padding:8px;
+  }
+  .search-box button{
+    width:42px; height:42px; border-radius:50%;
+    border:none; cursor:pointer;
+    background:var(--accent); color:#fff; font-size:1.05rem;
+  }
+  .search-box button:hover{background:var(--accent-2)}
+
+  /* ---------- news panel ---------- */
+  .news-panel{
+    margin-top:28px;
+    width:680px;
+    max-width:92%;
+    background: var(--panel-bg);
+    border-radius:18px;
+    padding:18px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+  }
+  .news-panel h2{ color:var(--accent); margin:0 0 10px; font-size:1.15rem }
+  .news-list{ display:flex; flex-direction:column; gap:8px; max-height:220px; overflow:auto; padding-right:6px }
+  .news-list a{
+    display:block;
+    padding:10px 12px;
+    border-radius:10px;
+    text-decoration:none;
+    color:#f3f3f3;
+    background: rgba(40,40,40,0.45);
+    transition:0.18s;
+    font-weight:500;
+  }
+  .news-list a:hover{ background: rgba(255,111,60,0.12) }
+
+  /* ---------- quick links ---------- */
+  .quick-links{ margin-top:18px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center }
+  .quick-links button{
+    border:none; padding:9px 16px; border-radius:12px; cursor:pointer;
+    color:#fff; font-weight:600;
+  }
+  .google{background:#4285F4} .youtube{background:#FF0000} .github{background:#111}
+  .gmail{background:#EA4335} .twitter{background:#1DA1F2}
+  .quick-links button:hover{transform:translateY(-3px); opacity:0.95}
+
+  /* ========== floating customization button ========== */
+  .customize-btn{
+    position:fixed;
+    right:22px;
+    bottom:22px;
+    width:56px;height:56px;border-radius:50%;
+    background:var(--accent); color:#fff; border:none; cursor:pointer;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35); z-index:60;
+    display:inline-flex; align-items:center; justify-content:center; font-size:1.4rem;
+    transition: transform .18s, background .18s;
+  }
+  .customize-btn:hover{ transform:scale(1.06); background:var(--accent-2) }
+
+  /* ========== modal overlay & content (centered) ========== */
+  .modal {
+    position:fixed;
+    inset:0;
+    display:none;                    /* hidden by default */
+    place-items:center;              /* centers content horizontally & vertically */
+    background: rgba(0,0,0,0.46);    /* single overlay — no additional rectangle */
+    backdrop-filter: blur(6px);
+    z-index:100;
+    transition: opacity .25s ease;
+    will-change: opacity, transform;
+  }
+  .modal.active { display:grid; opacity:1 }
+
+  .modal-content{
+    width:720px;
+    max-width:94%;
+    background: linear-gradient(180deg, rgba(28,28,28,0.96), rgba(20,20,20,0.96));
+    border-radius:18px;              /* rounded corners — no sharp rectangle behind */
+    padding:28px 28px 22px;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.55);
+    position:relative;
+    transform: translateY(18px);
+    animation: popIn .32s cubic-bezier(.2,.9,.3,1) forwards;
+    max-height:82vh;
+    overflow:auto;
+  }
+
+  @keyframes popIn {
+    from { opacity:0; transform:translateY(18px) scale(.995) }
+    to   { opacity:1; transform:none }
+  }
+
+  /* close button integrated inside the rounded modal */
+  .close-btn{
+    position:absolute;
+    right:16px; top:12px;
+    background:transparent; border:none; color:var(--accent); font-size:20px; cursor:pointer;
+  }
+  .close-btn:hover{ color:var(--accent-2); transform:scale(1.15) }
+
+  /* ========= Modal internal layout ========= */
+  .modal h2{ color:var(--accent); margin:6px 0 14px; text-align:center }
+  .modal p{ color:#ddd; margin:8px 0 12px; text-align:center }
+
+  .section-row{ display:flex; gap:18px; align-items:center; justify-content:center; flex-wrap:wrap }
+
+  /* upload button */
+  .upload-label{
+    display:inline-block; padding:10px 16px; background:var(--accent); color:#fff;
+    border-radius:10px; cursor:pointer; font-weight:600; margin:6px 0;
+  }
+  .upload-label:hover{ background:var(--accent-2) }
+
+  /* solid color picker */
+  .color-picker {
+    display:flex; gap:12px; align-items:center; justify-content:center; margin:10px 0 18px;
+  }
+  .color-preview{ width:56px; height:44px; border-radius:8px; border:2px solid rgba(255,255,255,0.06) }
+  .color-input{ width:54px; height:36px; border-radius:8px; border:none; cursor:pointer; padding:0 }
+
+  /* gradient picker */
+  .gradient-preview{ width:100px; height:44px; border-radius:8px; border:2px solid rgba(255,255,255,0.06) }
+  .gradient-inputs{ display:flex; gap:8px; align-items:center }
+
+  .apply-btn{
+    padding:8px 14px; border-radius:10px; border:none; cursor:pointer; background:var(--accent); color:#fff; font-weight:600;
+  }
+  .apply-btn:hover{ background:var(--accent-2) }
+
+  /* presets thumbnails grid */
+  .presets-grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:12px; margin-top:14px;
+  }
+  .preset-thumb{
+    width:100%; padding-top:56%; /* keep aspect ratio */
+    background-size:cover; background-position:center;
+    border-radius:10px; cursor:pointer; position:relative; overflow:hidden;
+    border:2px solid rgba(255,255,255,0.03);
+    transition: transform .18s, border-color .18s, box-shadow .18s;
+  }
+  .preset-thumb:hover{ transform:scale(1.04); border-color:var(--accent); box-shadow:0 8px 24px rgba(0,0,0,0.45) }
+
+  /* ensure scrollbars are subtle */
+  .modal-content::-webkit-scrollbar{ width:9px }
+  .modal-content::-webkit-scrollbar-thumb{ background: rgba(255,111,60,0.14); border-radius:8px }
+
+  /* Responsive tweaks */
+  @media (max-width:640px){
+    h1{ font-size:2rem }
+    .info-bar{ gap:12px; padding:10px }
+    .modal-content{ padding:18px }
+    .presets-grid{ grid-template-columns:repeat(3,1fr) }
+  }
+</style>
+</head>
+<body>
+
+  <!-- top information -->
+  <div class="info-bar" role="region" aria-label="time and weather">
+    <div class="item" id="timeDisplay">12:00 AM</div>
+    <div class="item" id="dateDisplay">Tue, Oct 28</div>
+    <div class="item" id="weatherDisplay">☀️ 24°C — Clear</div>
+  </div>
+
+  <!-- title + search -->
+  <h1>ARC</h1>
+  <div class="subtitle">Your Modern Web Browser</div>
+
+  <div class="search-box" role="search" aria-label="search box">
+    <input id="searchInput" type="text" placeholder="Search Google or enter address..." aria-label="search input" />
+    <button aria-label="search" onclick="performSearch()">🔍</button>
+  </div>
+
+  <!-- news -->
+  <div class="news-panel" aria-live="polite">
+    <h2>📰 Top Stories</h2>
+    <div class="news-list" id="newsList">
+      <a>No news available</a>
+    </div>
+  </div>
+
+  <!-- quick links -->
+  <div class="quick-links" style="margin-bottom:60px">
+    <button class="google" onclick="navigate('https://www.google.com')">Google</button>
+    <button class="youtube" onclick="navigate('https://www.youtube.com')">YouTube</button>
+    <button class="github" onclick="navigate('https://github.com')">GitHub</button>
+    <button class="gmail" onclick="navigate('https://mail.google.com')">Gmail</button>
+    <button class="twitter" onclick="navigate('https://twitter.com')">Twitter</button>
+  </div>
+
+  <!-- floating customize button -->
+  <button class="customize-btn" aria-label="customize background" onclick="openModal()">✏️</button>
+
+  <!-- modal (centered) -->
+  <div class="modal" id="bgModal" role="dialog" aria-modal="true" aria-label="customize background dialog">
+    <div class="modal-content">
+      <button class="close-btn" aria-label="close" onclick="closeModal()">✖</button>
+
+      <h2>Customize Background</h2>
+
+      <!-- upload -->
+      <div style="text-align:center; margin-bottom:8px">
+        <label class="upload-label" for="bgUpload">📁 Upload Your Own</label>
+        <input id="bgUpload" type="file" accept="image/*" style="display:none">
+      </div>
+
+      <!-- solid color -->
+      <p style="margin-top:8px; margin-bottom:6px; color:#e8e8e8">Solid color</p>
+      <div class="color-picker">
+        <div class="color-preview" id="colorPreview" aria-hidden="true"></div>
+        <input id="colorInput" class="color-input" type="color" value="#1e1e1e" aria-label="choose color">
+        <button class="apply-btn" onclick="applyColor()">Apply color</button>
+      </div>
+
+      <!-- gradient -->
+      <p style="margin-top:6px; margin-bottom:6px; color:#e8e8e8">Gradient</p>
+      <div style="display:flex;flex-direction:column; align-items:center; gap:10px;">
+        <div class="gradient-preview" id="gradientPreview" aria-hidden="true"></div>
+        <div class="gradient-inputs">
+          <input id="gradC1" type="color" value="#ff6f3c" aria-label="gradient start">
+          <input id="gradC2" type="color" value="#ff9c7a" aria-label="gradient end">
+          <button class="apply-btn" onclick="applyGradient()">Apply gradient</button>
+        </div>
+      </div>
+
+      <!-- presets -->
+      <p style="margin-top:16px; margin-bottom:6px; color:#e8e8e8">Wallpaper presets</p>
+      <div class="presets-grid" id="presetsGrid" aria-label="preset wallpapers"></div>
+    </div>
+  </div>
+
+<script>
+  /* ---------- Time & date ---------- */
+  function updateTime(){
+    const now = new Date();
+    const hours = now.getHours() % 12 || 12;
+    const minutes = String(now.getMinutes()).padStart(2,'0');
+    const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+    const dateParts = now.toDateString().split(' ').slice(0,3).join(', ');
+    document.getElementById('timeDisplay').textContent = `${hours}:${minutes} ${ampm}`;
+    document.getElementById('dateDisplay').textContent = dateParts;
+  }
+  setInterval(updateTime, 1000); updateTime();
+
+  /* ---------- Search + nav hooks (preserve arc://navigate) ---------- */
+  function performSearch(){
+    const q = document.getElementById('searchInput').value.trim();
+    if(!q) return;
+    const url = (q.startsWith('http') || q.includes('.')) ? q : `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+    window.location.href = `arc://navigate/${url}`;
+  }
+  function navigate(url){
+    window.location.href = `arc://navigate/${url}`;
+  }
+
+  /* ---------- Weather & News (Python will call these) ---------- */
+  function updateWeather(icon, temp, desc, location){
+    document.getElementById('weatherDisplay').innerHTML = `${icon} ${temp}°C — ${desc}<br><span style="opacity:.9;font-size:.9rem">${location}</span>`;
+  }
+  function updateNews(articles){
+    const container = document.getElementById('newsList');
+    container.innerHTML = '';
+    if(!articles || !articles.length){
+      container.innerHTML = '<a>No news available</a>';
+      return;
+    }
+    articles.forEach(a=>{
+      const el = document.createElement('a');
+      el.href = a.url ? `arc://navigate/${a.url}` : '#';
+      el.textContent = a.title || 'Untitled';
+      container.appendChild(el);
+    });
+  }
+  window.updateWeather = updateWeather;
+  window.updateNews = updateNews;
+
+  /* ---------- Modal open/close (centered) ---------- */
+  const modal = document.getElementById('bgModal');
+  function openModal(){ modal.classList.add('active'); document.body.style.overflow='hidden' }
+  function closeModal(){ modal.classList.remove('active'); document.body.style.overflow='' }
+  modal.addEventListener('click', (e)=>{ if(e.target===modal) closeModal(); });
+
+  /* ---------- Preset generation ---------- */
+  const presetsGrid = document.getElementById('presetsGrid');
+  (function generatePresets(){
+    for(let i=1;i<=10;i++){
+      const d = document.createElement('div');
+      d.className = 'preset-thumb';
+      d.style.backgroundImage = `url('assets/backgrounds/bg${i}.jpg')`;
+      d.title = `Background ${i}`;
+      d.onclick = ()=> {
+        // apply visually
+        document.body.style.backgroundImage = `url('assets/backgrounds/bg${i}.jpg')`;
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundPosition = 'center';
+        // notify python via custom protocol (landing_page.py handles arc://background/)
+        window.location.href = `arc://background/image/assets/backgrounds/bg${i}.jpg`;
+        closeModal();
+      };
+      presetsGrid.appendChild(d);
+    }
+  })();
+
+  /* ---------- Upload handler ---------- */
+   const uploadInput = document.getElementById('bgUpload');
+  uploadInput.addEventListener('change', async (ev) => {
+    const file = ev.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result;
+
+      // Apply image immediately for instant feedback
+      document.body.style.backgroundImage = `url('${dataUrl}')`;
+      document.body.style.backgroundSize = 'cover';
+      document.body.style.backgroundPosition = 'center';
+
+      // Notify Python (URL-safe short marker, not full base64)
+      // Python should internally retrieve the file from a shared location if needed
+      try {
+        // Pass only file name to Python, not the entire data URI to prevent URI overflow
+        window.location.href = `arc://background/upload/${encodeURIComponent(file.name)}`;
+      } catch (err) {
+        console.error("Failed to notify Python:", err);
+      }
+
+      // Save locally for persistence
+      try { localStorage.setItem('arcBackgroundVisual', `url('${dataUrl}')`); } catch(e) {}
+
+      closeModal();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  /* ---------- Solid color ---------- */
+  const colorInput = document.getElementById('colorInput');
+  const colorPreview = document.getElementById('colorPreview');
+  colorPreview.style.background = colorInput.value;
+  colorInput.addEventListener('input', ()=> colorPreview.style.background = colorInput.value);
+
+  function applyColor(){
+    const c = colorInput.value;
+    document.body.style.background = c;
+    document.body.style.backgroundSize = 'cover';
+    // tell python
+    window.location.href = `arc://background/color/${encodeURIComponent(c)}`;
+    closeModal();
+  }
+
+  /* ---------- Gradient ---------- */
+  const g1 = document.getElementById('gradC1'), g2 = document.getElementById('gradC2');
+  const gPreview = document.getElementById('gradientPreview');
+  function updateGradientPreview(){ gPreview.style.background = `linear-gradient(135deg, ${g1.value}, ${g2.value})` }
+  g1.addEventListener('input', updateGradientPreview);
+  g2.addEventListener('input', updateGradientPreview);
+  updateGradientPreview();
+
+  function applyGradient(){
+    const grad = `linear-gradient(135deg, ${g1.value}, ${g2.value})`;
+    document.body.style.background = grad;
+    document.body.style.backgroundSize = 'cover';
+    // encode and notify python
+    window.location.href = `arc://background/gradient/${encodeURIComponent(JSON.stringify({start:g1.value,end:g2.value}))}`;
+    closeModal();
+  }
+
+  /* ---------- Save/load user's last background locally (visual only) ---------- */
+  // Load saved background if present (visual only — Python may have own persistence)
+  (function loadSavedBackground(){
+    try{
+      const saved = localStorage.getItem('arcBackgroundVisual');
+      if(saved){
+        // saved might be a plain color, a gradient, or a url(...) string
+        document.body.style.background = saved;
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundPosition = 'center';
+      }
+    }catch(e){}
+  })();
+
+  // Save last visual selection (called whenever we change body background)
+  function saveVisualBackground(value){
+    try{ localStorage.setItem('arcBackgroundVisual', value); }catch(e){}
+  }
+
+  // Hook wrappers to save visual state then call arc:// protocol
+  // (Wrapped usage inside each apply/select already sets style and calls arc://...)
+  // But to ensure visual persistence, intercept navigation by saving; we use MutationObserver on style attribute:
+  const obs = new MutationObserver(()=>saveVisualBackground(document.body.style.background || document.body.style.backgroundImage || ''));
+  obs.observe(document.body, { attributes:true, attributeFilter:['style'] });
+
+  /* ---------- Prevent focus outline ring on click (for keyboard use still accessible) ---------- */
+  // We still allow keyboard focus but hide the default focus ring visually:
+  document.addEventListener('mousedown', ()=> document.documentElement.style.setProperty('--focus-visible','none'));
+  document.addEventListener('keydown', ()=> document.documentElement.style.removeProperty('--focus-visible'));
+</script>
+</body>
+</html>
